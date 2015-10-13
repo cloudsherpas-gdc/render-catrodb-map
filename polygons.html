@@ -8,16 +8,10 @@
 
     <!-- Map takes up full browser window -->
     <style>
-      html, body {
-          width: 100%;
-          margin: 0;
-          padding: 0;
-      }
-
-      #map {
-          height: 480px;
-          margin: 25px auto;
-          width: 600px;
+      html, body, #map {
+        height: 100%;
+        padding: 0;
+        margin: 0;
       }
     </style>
 
@@ -36,8 +30,8 @@
 
         function init() {
           var mapOptions = {
-            zoom: 8,
-            center: new google.maps.LatLng(33.3882656,126.6345224)
+            zoom: 3,
+            center: new google.maps.LatLng(10.5351477,103.5229459)
           };
           cartodbMap = new google.maps.Map(document.getElementById('map'), mapOptions);
         };
@@ -47,7 +41,7 @@
          */
         function googleMapsEngine() {
           var layer = new google.maps.visualization.DynamicMapsEngineLayer({
-            layerId: '15388801087698787141-11268895540094885016',
+            layerId: '15388801087698787145-11268895540094885010',
             map: gmeMap,
             suppressInfoWindows: true,
             clickable: false
@@ -59,7 +53,7 @@
          * :Param: cartodbMAP and vizjson
          */
         function cartoDB(){
-          var vizjson = 'https://richmondgozarin.cartodb.com/api/v2/viz/e9b33ee2-70e4-11e5-90b5-0e3a376473ab/viz.json';
+          var vizjson = 'https://richmondgozarin.cartodb.com/api/v2/viz/532db7ae-71b1-11e5-8a4f-0e98b61680bf/viz.json';
           cartodb.createLayer(cartodbMap, vizjson).addTo(cartodbMap);
         }
 
