@@ -30,6 +30,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=visualization"></script>
     <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="node_modules/axios/dist/axios.js"></script>
     <!-- Drop your code between the script tags below! -->
     <style type="cartocss/text" id="polygons_points">
       #random_points{
@@ -88,9 +89,6 @@
       }
 
       #polygons{polygon-fill: #FF6600;polygon-opacity: 0.7;line-color: #FFF;line-width: 0.5;line-opacity: 1;}
-
-    </style>
-    <style type="text/sql" id="sql">
 
     </style>
     <script>
@@ -152,8 +150,13 @@
             'FROM random_points WHERE ST_Intersects(random_points.the_geom, polygon_v3.the_geom))';
 
             url = "https://"+username+".cartodb.com/api/v2/sql?q="+sql+"&api_key="+apiKey;
-            $.getJSON(url, function(data) {
-              console.log('ROWS::',data.rows);
+
+            axios.get(url)
+            .then(function (response) {
+              console.log('AXIOS::',response);
+            })
+            .catch(function (response) {
+              console.log('AXIOS ERR::',response);
             });
           }
 
@@ -163,18 +166,13 @@
             sql = "INSERT INTO random_points (the_geom) VALUES ( ST_SetSRID(ST_Point("+lng+","+lat+"),4326) )";
             url = "https://"+username+".cartodb.com/api/v2/sql?q="+sql+"&api_key="+apiKey;
 
-            $.ajax({
-              url: url,
-              type: 'POST',
-              dataType: 'json',
-              success: function(data) {
-                console.log('data::>',data);
-              },
-              error: function(xhr, status, err) {
-                console.error(status, err.toString());
-              }
+            axios.post(url)
+            .then(function (response) {
+              console.log('POST::',response);
+            })
+            .catch(function (response) {
+              console.log('POST ERROR::',response);
             });
-
 
           }
 
@@ -183,7 +181,8 @@
           cartodb.createLayer(cartodbMap, vizjson)
             .addTo(cartodbMap)
             .done(function(layer){
-              setInterval(r_points, 1000);
+              //setInterval(r_points, 1000);
+              r_points();
               var sublayer = layer.getSubLayer(0)
               console.log('SUBLAYER:>', sublayer);
 
