@@ -19,6 +19,12 @@
   </head>
   <body>
     <div id="map"></div>
+    <legend>
+      Green = 0 - 10
+      Yellow = 11 - 20
+      Orange = 21 - 30
+      Red = 31 to infinity
+    </legend>
 
     <!-- include cartodb.js library -->
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=visualization"></script>
@@ -88,7 +94,10 @@
 
     </style>
     <script>
-        var cartodbMap;
+        var cartodbMap, username, apiKey, sql, lng, lat;
+
+        username = "richmondgozarin";
+        apiKey = "e773c55b7c6704955d03427e1faffaa9972c31a5";
 
         function init() {
           var mapOptions = {
@@ -115,20 +124,73 @@
             GROUP BY
               polygon_v3.cartodb_id, polygon_v3.the_geom, polygon_v3.the_geom_webmercator";*/
 
+
           var layerSource = {
-              user_name: 'richmondgozarin',
+              user_name: username,
               type: 'cartodb',
               sublayers: [
                 {
                   sql: $('#sql').html(),
                   cartocss: $('#polygons_points').text()
-                },
-
-
+                }
               ]
           }
+
+          function getRandomInRange(from, to, fixed) {
+              return (Math.random() * (to - from) + from).toFixed(fixed) * 1;
+          }
+          function r_points(){
+            console.log('5sec/points');
+            var i=0;
+
+            while (i < 5) {
+                service();
+                i++;
+            }
+
+            sql = 'UPDATE polygon_v3 SET points_count = (SELECT count(*) '+
+            'FROM random_points WHERE ST_Intersects(random_points.the_geom, polygon_v3.the_geom))';
+
+            url = "https://"+username+".cartodb.com/api/v2/sql?q="+sql+"&api_key="+apiKey;
+            $.getJSON(url, function(data) {
+              console.log('ROWS::',data.rows);
+            });
+          }
+
+          function service(){
+            lng = getRandomInRange(-180,180,8);
+            lat = getRandomInRange(-180,180,8);
+            sql = "INSERT INTO random_points (the_geom) VALUES ( ST_SetSRID(ST_Point("+lng+","+lat+"),4326) )";
+            url = "https://"+username+".cartodb.com/api/v2/sql?q="+sql+"&api_key="+apiKey;
+
+            $.ajax({
+              url: url,
+              type: 'POST',
+              dataType: 'json',
+              success: function(data) {
+                console.log('data::>',data);
+              },
+              error: function(xhr, status, err) {
+                console.error(status, err.toString());
+              }
+            });
+
+
+          }
+
           var vizjson = 'https://richmondgozarin.cartodb.com/api/v2/viz/2e75113c-71c5-11e5-a464-0e8c56e2ffdb/viz.json';
-          cartodb.createLayer(cartodbMap, vizjson).addTo(cartodbMap);
+
+          cartodb.createLayer(cartodbMap, vizjson)
+            .addTo(cartodbMap)
+            .done(function(layer){
+              setInterval(r_points, 1000);
+              var sublayer = layer.getSubLayer(0)
+              console.log('SUBLAYER:>', sublayer);
+
+            })
+            .error(function(err){
+              console.error('ERR: ' + err)
+            });
         }
 
         init();
